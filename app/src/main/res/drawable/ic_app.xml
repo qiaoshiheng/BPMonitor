@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- 白色圆底 -->
+    <path android:fillColor="#E5484D"
+        android:pathData="M24,2 L24,2 A22,22 0 0 1 24,46 A22,22 0 0 1 24,2 Z" />
+    <!-- 心形 -->
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M24,36 C24,36 10,26.5 10,17.8 C10,13 13.8,9.5 18.2,9.5 C20.8,9.5 23,10.8 24,12.8 C25,10.8 27.2,9.5 29.8,9.5 C34.2,9.5 38,13 38,17.8 C38,26.5 24,36 24,36 Z" />
+    <!-- 脉搏线 -->
+    <path android:strokeColor="#E5484D" android:strokeWidth="2.6"
+        android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M13,22 L19,22 L21.5,16.5 L25,26.5 L27.5,21.5 L29,22 L35,22" />
+</vector>

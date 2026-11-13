@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:scrollbars="none">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="24dp">
+
+        <!-- 顶栏 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="28dp"
+            android:paddingBottom="8dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="血压记录"
+                    android:textColor="@color/text_main"
+                    android:textSize="26sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_sub"
+                    android:textSize="13sp"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/userChip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:includeFontPadding="false"
+                android:layout_marginEnd="12dp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:paddingTop="9dp"
+                android:paddingBottom="9dp" />
+
+            <Button
+                android:id="@+id/btnAdd"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:background="@drawable/bg_btn_primary"
+                android:text="+"
+                android:textColor="#FFFFFF"
+                android:textSize="26sp"
+                android:includeFontPadding="false"
+                android:stateListAnimator="@null" />
+        </LinearLayout>
+
+        <!-- 最新读数卡片 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="12dp"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="最新一次测量"
+                android:textColor="@color/text_sub"
+                android:textSize="13sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="10dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="bottom">
+
+                        <TextView
+                            android:id="@+id/tvLatestSys"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/sys_color"
+                            android:textSize="52sp"
+                            android:textStyle="bold"
+                            android:includeFontPadding="false" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="/"
+                            android:textColor="@color/text_sub"
+                            android:textSize="30sp"
+                            android:paddingStart="4dp"
+                            android:paddingEnd="4dp"
+                            android:paddingBottom="8dp" />
+
+                        <TextView
+                            android:id="@+id/tvLatestDia"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/dia_color"
+                            android:textSize="52sp"
+                            android:textStyle="bold"
+                            android:includeFontPadding="false" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="mmHg"
+                            android:textColor="@color/text_sub"
+                            android:textSize="13sp"
+                            android:paddingStart="6dp"
+                            android:paddingBottom="10dp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvLatestTime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/text_sub"
+                        android:textSize="13sp"
+                        android:layout_marginTop="6dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center_horizontal">
+
+                    <TextView
+                        android:id="@+id/tvLatestHr"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/hr_color"
+                        android:textSize="34sp"
+                        android:textStyle="bold"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="次/分"
+                        android:textColor="@color/text_sub"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/badgeRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="12dp" />
+        </LinearLayout>
+
+        <!-- 图表卡片 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="14dp"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="趋势"
+                    android:textColor="@color/text_main"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:id="@+id/periodTabs"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" />
+            </LinearLayout>
+
+            <!-- 图例 -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp">
+
+                <View android:layout_width="14dp" android:layout_height="4dp"
+                    android:layout_gravity="center_vertical"
+                    android:background="@color/sys_color" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="收缩压" android:textSize="12sp" android:textColor="@color/text_sub"
+                    android:paddingEnd="14dp" android:paddingStart="4dp" />
+
+                <View android:layout_width="14dp" android:layout_height="4dp"
+                    android:layout_gravity="center_vertical"
+                    android:background="@color/dia_color" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="舒张压" android:textSize="12sp" android:textColor="@color/text_sub"
+                    android:paddingEnd="14dp" android:paddingStart="4dp" />
+
+                <View android:layout_width="14dp" android:layout_height="4dp"
+                    android:layout_gravity="center_vertical"
+                    android:background="@color/hr_color" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="心率" android:textSize="12sp" android:textColor="@color/text_sub"
+                    android:paddingStart="4dp" />
+            </LinearLayout>
+
+            <com.q.bpmonitor.ChartView
+                android:id="@+id/chart"
+                android:layout_width="match_parent"
+                android:layout_height="240dp"
+                android:layout_marginTop="8dp" />
+
+            <TextView
+                android:id="@+id/tvChartSummary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_sub"
+                android:textSize="13sp"
+                android:layout_marginTop="8dp" />
+        </LinearLayout>
+
+        <!-- 健康提示卡片 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="14dp"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="健康提示"
+                    android:textColor="@color/text_main"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="依据你的记录自动生成"
+                    android:textColor="@color/text_sub"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/adviceList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="6dp" />
+
+            <TextView
+                android:id="@+id/tvAiTextBtn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_input"
+                android:text="🤖 一键生成 AI 咨询文本"
+                android:textColor="@color/primary"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:paddingTop="13dp"
+                android:paddingBottom="13dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="参考：《中国高血压防治指南（2024年修订版）》· 2020 ESC 房颤管理指南 · 脉搏触诊与单导联心电图房颤筛查研究（STROKESTOP II, 2021）。本提示基于你的自测记录生成，仅供健康参考，不构成诊断依据。"
+                android:textColor="@color/text_sub"
+                android:textSize="10sp"
+                android:lineSpacingExtra="3dp" />
+        </LinearLayout>
+
+        <!-- 记录列表 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="14dp"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="全部记录"
+                android:textColor="@color/text_main"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:id="@+id/recordList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="6dp" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

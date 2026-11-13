@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_dialog"
+    android:padding="22dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="AI 咨询文本"
+        android:textColor="@color/text_main"
+        android:textSize="19sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="复制后粘贴给任意 AI（DeepSeek、豆包、ChatGPT 等）即可咨询"
+        android:textColor="@color/text_sub"
+        android:textSize="12sp"
+        android:layout_marginTop="4dp" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="320dp"
+        android:layout_marginTop="14dp"
+        android:scrollbars="vertical">
+
+        <TextView
+            android:id="@+id/tvAiText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_input"
+            android:padding="12dp"
+            android:textSize="12sp"
+            android:typeface="monospace"
+            android:textColor="@color/text_main"
+            android:lineSpacingExtra="3dp" />
+    </ScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="18dp">
+
+        <Button
+            android:id="@+id/btnCopy"
+            android:layout_width="0dp"
+            android:layout_height="46dp"
+            android:layout_weight="1.2"
+            android:background="@drawable/bg_btn_primary"
+            android:text="复制全文"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:stateListAnimator="@null" />
+
+        <Button
+            android:id="@+id/btnShare"
+            android:layout_width="0dp"
+            android:layout_height="46dp"
+            android:layout_weight="1"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/bg_chip"
+            android:text="分享"
+            android:textColor="#5A6270"
+            android:textSize="15sp"
+            android:stateListAnimator="@null" />
+
+        <Button
+            android:id="@+id/btnClose"
+            android:layout_width="0dp"
+            android:layout_height="46dp"
+            android:layout_weight="1"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/bg_chip"
+            android:text="关闭"
+            android:textColor="#5A6270"
+            android:textSize="15sp"
+            android:stateListAnimator="@null" />
+    </LinearLayout>
+</LinearLayout>

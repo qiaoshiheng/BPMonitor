@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg">#F5F6F8</color>
+    <color name="card">#FFFFFF</color>
+    <color name="text_main">#1F2430</color>
+    <color name="text_sub">#8A93A2</color>
+    <color name="primary">#E5484D</color>
+    <color name="primary_dark">#C9363B</color>
+    <color name="sys_color">#E5484D</color>
+    <color name="dia_color">#3E7BFA</color>
+    <color name="hr_color">#30A46C</color>
+    <color name="badge_irregular">#F5A524</color>
+    <color name="badge_afib">#9E6BDE</color>
+    <color name="grid">#EDEFF3</color>
+    <color name="chip_normal">#F0F2F5</color>
+    <color name="icon_bg">#E5484D</color>
+</resources>
