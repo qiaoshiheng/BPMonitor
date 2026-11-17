@@ -1,6 +1,6 @@
 {
-  "versionCode": 5,
-  "versionName": "1.4",
-  "url": "https://github.com/qiaoshiheng/BPMonitor/releases/download/v1.4/BPMonitor-v1.4.apk",
-  "notes": "授权协议调整：自本版本起采用自定义非商用许可协议——个人使用、学习、修改、分享免费，但禁止上架商城收费、植入广告等商业用途（v1.3 及之前按 MIT 发布的历史版本不受影响）。功能无变化。"
+  "versionCode": 6,
+  "versionName": "1.5",
+  "url": "https://github.com/qiaoshiheng/BPMonitor/releases/download/v1.5/BPMonitor-v1.5.apk",
+  "notes": "新增数据备份/恢复：一键导出全部血压记录与用户档案到本地文件，重装/换机后一键导入还原，卸载不再丢数据。另修复安装失败时无提示的问题。"
 }
