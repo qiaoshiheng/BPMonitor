@@ -19,3 +19,9 @@ keystore/
 # OS
 .DS_Store
 Thumbs.db
+build_log.txt
+git_log.txt
+adb.txt
+keygen_log.txt
+pkg_log.txt
+*.bpbackup
