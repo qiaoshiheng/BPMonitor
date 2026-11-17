@@ -1,6 +1,6 @@
 {
-  "versionCode": 4,
+  "versionCode": 3,
   "versionName": "1.2",
   "url": "https://github.com/qiaoshiheng/BPMonitor/releases/download/v1.2/BPMonitor-v1.2.apk",
-  "notes": "【测试】验证自动更新流程"
+  "notes": "新增应用内自动更新功能：启动时自动检查新版本，发现新版本弹窗提醒，一键下载安装；健康提示卡片新增「检查更新」入口"
 }

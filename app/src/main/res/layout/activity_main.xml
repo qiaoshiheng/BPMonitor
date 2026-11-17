@@ -327,6 +327,18 @@
                 android:paddingBottom="13dp" />
 
             <TextView
+                android:id="@+id/tvCheckUpdate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="检查更新"
+                android:textColor="@color/text_sub"
+                android:textSize="12sp"
+                android:gravity="center"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp" />
+
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"

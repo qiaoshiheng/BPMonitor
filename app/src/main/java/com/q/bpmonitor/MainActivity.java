@@ -32,6 +32,7 @@ public class MainActivity extends android.app.Activity {
     private LinearLayout badgeRow, periodTabs, recordList, adviceList, statsRow;
     private ChartView chart;
     private TextView userChip;
+    private final Updater updater = new Updater();
 
     private final SimpleDateFormat fmtToday = new SimpleDateFormat("yyyy年M月d日 EEEE", Locale.CHINA);
     private final SimpleDateFormat fmtDateTime = new SimpleDateFormat("M月d日 HH:mm", Locale.CHINA);
@@ -64,6 +65,7 @@ public class MainActivity extends android.app.Activity {
 
         userChip.setOnClickListener(v -> showUserDialog());
         findViewById(R.id.tvAiTextBtn).setOnClickListener(v -> showAiTextDialog());
+        findViewById(R.id.tvCheckUpdate).setOnClickListener(v -> { checkUpdate(true); });
 
         tvDate.setText(fmtToday.format(new Date()));
 
@@ -77,7 +79,126 @@ public class MainActivity extends android.app.Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        updater.handleInstallResult(this, getIntent());
+        autoCheckUpdate();
         refresh();
+    }
+
+    // ---------- 自动更新 ----------
+
+    private void autoCheckUpdate() {
+        long last = getSharedPreferences("bp_prefs", MODE_PRIVATE).getLong("last_update_check", 0);
+        if (System.currentTimeMillis() - last < 24f * 3600 * 1000) return;
+        getSharedPreferences("bp_prefs", MODE_PRIVATE).edit()
+                .putLong("last_update_check", System.currentTimeMillis()).apply();
+        checkUpdate(false);
+    }
+
+    private void checkUpdate(final boolean manual) {
+        updater.check(this, new Updater.CheckListener() {
+            @Override public void onUpToDate() {
+                if (manual) Toast.makeText(MainActivity.this,
+                        "当前已是最新版本 v" + versionName(), Toast.LENGTH_SHORT).show();
+            }
+            @Override public void onAvailable(int code, String name, String notes, String url) {
+                showUpdateDialog(name, notes, url);
+            }
+            @Override public void onFail(String reason) {
+                android.util.Log.d("BpUpdate", "check fail: " + reason);
+                if (manual) Toast.makeText(MainActivity.this,
+                        "检查更新失败，请检查网络", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private String versionName() {
+        try {
+            return getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+        } catch (Exception e) { return "?"; }
+    }
+
+    private void showUpdateDialog(String ver, String notes, String url) {
+        android.app.Dialog dialog = new android.app.Dialog(this);
+        dialog.setContentView(R.layout.dialog_confirm);
+        dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(0));
+        android.view.WindowManager.LayoutParams lp = dialog.getWindow().getAttributes();
+        lp.width = (int) (getResources().getDisplayMetrics().widthPixels * 0.84f);
+        dialog.getWindow().setAttributes(lp);
+
+        TextView title = dialog.findViewById(R.id.tvConfirmTitle);
+        TextView msg = dialog.findViewById(R.id.tvConfirmMsg);
+        TextView btnNo = dialog.findViewById(R.id.btnCancel);
+        TextView btnYes = dialog.findViewById(R.id.btnDelete);
+        title.setText("发现新版本 v" + ver);
+        msg.setText(notes + "\n\n当前版本 v" + versionName() + "，更新不会丢失任何数据");
+        btnNo.setText("以后再说");
+        btnYes.setText("立即更新");
+        btnNo.setOnClickListener(v -> dialog.dismiss());
+        btnYes.setOnClickListener(v -> {
+            dialog.dismiss();
+            downloadUpdate(url);
+        });
+        dialog.show();
+    }
+
+    private void downloadUpdate(String url) {
+        android.app.Dialog dialog = new android.app.Dialog(this);
+        LinearLayout card = new LinearLayout(this);
+        card.setOrientation(LinearLayout.VERTICAL);
+        card.setPadding(dp(22), dp(22), dp(22), dp(18));
+        android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
+        bg.setColor(0xFFFFFFFF);
+        bg.setCornerRadius(dp(22));
+        card.setBackground(bg);
+
+        TextView title = new TextView(this);
+        title.setText("正在下载更新");
+        title.setTextSize(17);
+        title.setTypeface(null, android.graphics.Typeface.BOLD);
+        title.setTextColor(0xFF1F2430);
+        card.addView(title);
+
+        android.widget.ProgressBar bar = new android.widget.ProgressBar(this, null,
+                android.R.attr.progressBarStyleHorizontal);
+        bar.setProgressTintList(android.content.res.ColorStateList.valueOf(0xFFE5484D));
+        LinearLayout.LayoutParams blp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        blp.setMargins(0, dp(16), 0, 0);
+        bar.setLayoutParams(blp);
+        card.addView(bar);
+
+        TextView pct = new TextView(this);
+        pct.setText("0%");
+        pct.setTextSize(13);
+        pct.setTextColor(0xFF8A93A2);
+        pct.setGravity(Gravity.CENTER);
+        pct.setPadding(0, dp(10), 0, 0);
+        card.addView(pct);
+
+        dialog.setContentView(card);
+        dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(0));
+        android.view.WindowManager.LayoutParams lp = dialog.getWindow().getAttributes();
+        lp.width = (int) (getResources().getDisplayMetrics().widthPixels * 0.84f);
+        dialog.getWindow().setAttributes(lp);
+        dialog.show();
+
+        updater.download(this, url, new Updater.DownloadListener() {
+            @Override public void onProgress(int p) {
+                bar.setProgress(p);
+                pct.setText(p + "%");
+            }
+            @Override public void onDone(java.io.File apk) {
+                dialog.dismiss();
+                Toast.makeText(MainActivity.this, "下载完成，正在请求安装…", Toast.LENGTH_SHORT).show();
+                updater.install(MainActivity.this, apk);
+            }
+            @Override public void onFail(String reason) {
+                dialog.dismiss();
+                android.util.Log.d("BpUpdate", "download fail: " + reason);
+                Toast.makeText(MainActivity.this,
+                        "下载失败，请检查网络后重试", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void addPeriodTab(final int idx) {
