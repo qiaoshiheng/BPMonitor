@@ -13,6 +13,8 @@ captures/
 
 # Local config
 local.properties
+keystore.properties
+keystore/
 
 # OS
 .DS_Store
