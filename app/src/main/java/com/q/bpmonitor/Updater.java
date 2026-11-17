@@ -3,6 +3,7 @@ package com.q.bpmonitor;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Base64;
 
 import org.json.JSONObject;
 
@@ -14,22 +15,34 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * 应用内自动更新：从 GitHub 仓库 update.json 检查版本，多路镜像回退（国内可达），
- * 下载 APK（直连/镜像自动切换），交给 MainActivity 通过 PackageInstaller 安装。
+ * 应用内自动更新：从 GitHub 仓库 update.json 检查版本。
+ * 版本检查采用「多源并发竞速」：所有候选地址（含国内镜像与 GitHub API 兜底）
+ * 同时发起请求，谁先返回有效数据用谁的；全部失败时回退到本地缓存的
+ * 上一次版本信息（cached=true，可能为旧数据）。
+ * APK 下载仍按 直连 → 镜像 顺序回退。
  */
 public class Updater {
 
-    private static final String REPO_RAW =
+    private static final String RAW_URL =
             "https://raw.githubusercontent.com/qiaoshiheng/BPMonitor/main/update.json";
+    /** GitHub Contents API：返回 base64 内容，作为 raw 被墙时的兜底 */
+    private static final String API_URL =
+            "https://api.github.com/repos/qiaoshiheng/BPMonitor/contents/update.json?ref=main";
 
-    /** update.json 的候选地址，按序尝试直到成功 */
+    /** update.json 的候选地址（并发竞速，不按顺序依赖） */
     private static final String[] JSON_URLS = {
-            REPO_RAW,
-            "https://ghfast.top/" + REPO_RAW,
-            "https://gh-proxy.com/" + REPO_RAW,
-            "https://cdn.jsdelivr.net/gh/qiaoshiheng/BPMonitor@main/update.json"
+            "https://ghfast.top/" + RAW_URL,
+            "https://gh-proxy.com/" + RAW_URL,
+            "https://cdn.jsdelivr.net/gh/qiaoshiheng/BPMonitor@main/update.json",
+            "https://ghfast.top/" + API_URL,
+            "https://gh-proxy.com/" + API_URL,
+            RAW_URL,
+            API_URL
     };
 
     /** APK 下载地址的镜像变换 */
@@ -41,7 +54,8 @@ public class Updater {
 
     public interface CheckListener {
         void onUpToDate();
-        void onAvailable(int versionCode, String versionName, String notes, String url);
+        /** cached=true 表示该版本信息来自本地缓存（所有在线源都不可达时） */
+        void onAvailable(int versionCode, String versionName, String notes, String url, boolean cached);
         void onFail(String reason);
     }
 
@@ -55,31 +69,111 @@ public class Updater {
 
     // ---------- 版本检查 ----------
 
+    private static final String CACHE_FILE = "update_cache.json";
+
     public void check(final Context ctx, final CheckListener listener) {
         new Thread(() -> {
-            String reason = "unknown";
-            for (String u : JSON_URLS) {
-                try {
-                    String body = httpGet(u, 8000);
-                    JSONObject o = new JSONObject(body);
-                    final int code = o.getInt("versionCode");
-                    final String name = o.optString("versionName", "");
-                    final String notes = o.optString("notes", "");
-                    final String url = o.getString("url");
-                    int installed = installedVersionCode(ctx);
-                    if (code > installed) {
-                        main.post(() -> listener.onAvailable(code, name, notes, url));
-                    } else {
-                        main.post(listener::onUpToDate);
+            // 多源并发竞速：第一个返回有效 JSON 的源胜出
+            final AtomicReference<JSONObject> winner = new AtomicReference<>();
+            final CountDownLatch latch = new CountDownLatch(JSON_URLS.length);
+            for (final String u : JSON_URLS) {
+                new Thread(() -> {
+                    try {
+                        JSONObject o = fetchVersionJson(u, 6000);
+                        if (o != null) winner.compareAndSet(null, o);
+                    } catch (Exception ignored) {
+                    } finally {
+                        latch.countDown();
                     }
-                    return;
-                } catch (Exception e) {
-                    reason = e.getClass().getSimpleName() + ": " + e.getMessage();
-                }
+                }, "bp-update-src").start();
             }
-            final String fr = reason;
-            main.post(() -> listener.onFail(fr));
+            try {
+                latch.await(9, TimeUnit.SECONDS);
+            } catch (InterruptedException ignored) { }
+
+            JSONObject o = winner.get();
+            if (o != null) {
+                // 缓存本次成功的版本信息，供断网/全部源失效时兜底
+                saveCache(ctx, o.toString());
+                notifyVersion(ctx, o, false, listener);
+                return;
+            }
+
+            // 全部源失败 → 尝试本地缓存
+            JSONObject cached = loadCache(ctx);
+            if (cached != null) {
+                notifyVersion(ctx, cached, true, listener);
+                return;
+            }
+            main.post(() -> listener.onFail("all sources unreachable, no cache"));
         }, "bp-update-check").start();
+    }
+
+    /** 解析版本信息并回调（code > installed 才提示更新；缓存模式下 up-to-date 也静默） */
+    private void notifyVersion(Context ctx, JSONObject o, final boolean cached, final CheckListener listener) {
+        try {
+            final int code = o.getInt("versionCode");
+            final String name = o.optString("versionName", "");
+            final String notes = o.optString("notes", "");
+            final String url = o.getString("url");
+            final int installed = installedVersionCode(ctx);
+            if (code > installed) {
+                main.post(() -> listener.onAvailable(code, name, notes, url, cached));
+            } else if (!cached) {
+                main.post(listener::onUpToDate);
+            } else {
+                main.post(() -> listener.onFail("cached info up-to-date"));
+            }
+        } catch (Exception e) {
+            main.post(() -> listener.onFail("bad version json: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * 拉取并解析 update.json。
+     * raw / jsDelivr / 镜像直接返回 JSON；api.github.com contents 返回
+     * {"content":"<base64>"}，需解码后再解析。校验 versionCode/url 字段有效才算成功。
+     */
+    private JSONObject fetchVersionJson(String urlStr, int timeoutMs) throws Exception {
+        String body = httpGet(urlStr, timeoutMs);
+        try {
+            JSONObject o = new JSONObject(body);
+            if (urlStr.contains("api.github.com")) {
+                String b64 = o.optString("content", "").replace("\n", "");
+                if (b64.isEmpty()) return null;
+                o = new JSONObject(new String(
+                        Base64.decode(b64, Base64.DEFAULT), StandardCharsets.UTF_8));
+            }
+            o.getInt("versionCode");
+            o.getString("url");
+            return o;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private void saveCache(Context ctx, String json) {
+        try {
+            FileOutputStream fos = ctx.openFileOutput(CACHE_FILE, Context.MODE_PRIVATE);
+            fos.write(json.getBytes(StandardCharsets.UTF_8));
+            fos.close();
+        } catch (Exception ignored) { }
+    }
+
+    private JSONObject loadCache(Context ctx) {
+        try {
+            FileInputStream fis = ctx.openFileInput(CACHE_FILE);
+            java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+            byte[] buf = new byte[4096]; int n;
+            while ((n = fis.read(buf)) > 0) bos.write(buf, 0, n);
+            fis.close();
+            JSONObject o = new JSONObject(new String(bos.toByteArray(), StandardCharsets.UTF_8));
+            o.getInt("versionCode");
+            o.getString("url");
+            return o;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     // ---------- APK 下载 ----------

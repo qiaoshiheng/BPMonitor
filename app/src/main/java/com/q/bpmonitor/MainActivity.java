@@ -100,13 +100,18 @@ public class MainActivity extends android.app.Activity {
                 if (manual) Toast.makeText(MainActivity.this,
                         "当前已是最新版本 v" + versionName(), Toast.LENGTH_SHORT).show();
             }
-            @Override public void onAvailable(int code, String name, String notes, String url) {
-                showUpdateDialog(name, notes, url);
+            @Override public void onAvailable(int code, String name, String notes, String url, boolean cached) {
+                showUpdateDialog(name, notes, url, cached);
             }
             @Override public void onFail(String reason) {
                 android.util.Log.d("BpUpdate", "check fail: " + reason);
-                if (manual) Toast.makeText(MainActivity.this,
-                        "检查更新失败，请检查网络", Toast.LENGTH_SHORT).show();
+                if (manual) {
+                    Toast.makeText(MainActivity.this,
+                            reason != null && reason.contains("cached")
+                                    ? "已是最新版本（网络不可达，依据缓存信息判断）"
+                                    : "检查更新失败，请检查网络",
+                            Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -117,7 +122,7 @@ public class MainActivity extends android.app.Activity {
         } catch (Exception e) { return "?"; }
     }
 
-    private void showUpdateDialog(String ver, String notes, String url) {
+    private void showUpdateDialog(String ver, String notes, String url, boolean cached) {
         android.app.Dialog dialog = new android.app.Dialog(this);
         dialog.setContentView(R.layout.dialog_confirm);
         dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(0));
@@ -130,7 +135,8 @@ public class MainActivity extends android.app.Activity {
         TextView btnNo = dialog.findViewById(R.id.btnCancel);
         TextView btnYes = dialog.findViewById(R.id.btnDelete);
         title.setText("发现新版本 v" + ver);
-        msg.setText(notes + "\n\n当前版本 v" + versionName() + "，更新不会丢失任何数据");
+        msg.setText(notes + "\n\n当前版本 v" + versionName() + "，更新不会丢失任何数据"
+                + (cached ? "\n\n（当前网络无法访问更新源，以上为缓存的版本信息）" : ""));
         btnNo.setText("以后再说");
         btnYes.setText("立即更新");
         btnNo.setOnClickListener(v -> dialog.dismiss());

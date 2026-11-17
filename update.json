@@ -1,6 +1,6 @@
 {
-  "versionCode": 3,
-  "versionName": "1.2",
-  "url": "https://github.com/qiaoshiheng/BPMonitor/releases/download/v1.2/BPMonitor-v1.2.apk",
-  "notes": "新增应用内自动更新功能：启动时自动检查新版本，发现新版本弹窗提醒，一键下载安装；健康提示卡片新增「检查更新」入口"
+  "versionCode": 4,
+  "versionName": "1.3",
+  "url": "https://github.com/qiaoshiheng/BPMonitor/releases/download/v1.3/BPMonitor-v1.3.apk",
+  "notes": "更新检查更稳定：多更新源并发竞速（直连+镜像+GitHub API 兜底），全部不可达时使用本地缓存的版本信息，弱网环境下也能可靠检查更新"
 }
