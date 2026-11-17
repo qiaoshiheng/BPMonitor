@@ -1,6 +1,6 @@
 {
-  "versionCode": 4,
-  "versionName": "1.3",
-  "url": "https://github.com/qiaoshiheng/BPMonitor/releases/download/v1.3/BPMonitor-v1.3.apk",
-  "notes": "更新检查更稳定：多更新源并发竞速（直连+镜像+GitHub API 兜底），全部不可达时使用本地缓存的版本信息，弱网环境下也能可靠检查更新"
+  "versionCode": 5,
+  "versionName": "1.4",
+  "url": "https://github.com/qiaoshiheng/BPMonitor/releases/download/v1.4/BPMonitor-v1.4.apk",
+  "notes": "授权协议调整：自本版本起采用自定义非商用许可协议——个人使用、学习、修改、分享免费，但禁止上架商城收费、植入广告等商业用途（v1.3 及之前按 MIT 发布的历史版本不受影响）。功能无变化。"
 }

@@ -1,21 +1,81 @@
-MIT License
+BPMonitor 自定义非商用许可协议
+BPMonitor Non-Commercial License
 
 Copyright (c) 2026 qiaoshiheng
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+================================================================
+English
+================================================================
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. Grant. Permission is hereby granted, free of charge, to any person
+   obtaining a copy of this software and associated documentation files
+   (the "Software"), to use, copy, modify, merge, publish and distribute
+   the Software, and to permit persons to whom the Software is furnished
+   to do so, for PERSONAL, EDUCATIONAL AND NON-COMMERCIAL PURPOSES ONLY,
+   subject to the following conditions.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+2. Commercial use prohibited. The following are expressly FORBIDDEN
+   without a separate, prior written license from the copyright holder:
+   (a) selling, renting, or sublicensing the Software or any modified
+       version of it;
+   (b) distributing the Software (modified or not) through any app
+       store, paid download channel, or commercial distribution platform;
+   (c) embedding, bundling or integrating the Software into any product
+       or service that is monetized (including advertising, in-app
+       purchases, paid subscriptions, or data monetization).
+
+3. Attribution required. Any copy or substantial portion of the Software,
+   whether modified or not, MUST retain this License and the copyright
+   notice above. Removing, altering, or obscuring the copyright notice
+   or this License, or presenting the Software or its derivatives as
+   one's own original work, is a copyright infringement and an act of
+   unfair competition.
+
+4. Modifications must be open. If you distribute a modified version,
+   you must make its complete source code publicly available under
+   this same License.
+
+5. No warranty. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+   ANY KIND, EXPRESS OR IMPLIED. IN NO EVENT SHALL THE COPYRIGHT HOLDER
+   BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY.
+
+6. Medical disclaimer. The Software provides health suggestions for
+   reference only and does not constitute medical diagnosis or treatment
+   advice.
+
+Commercial licensing: contact the copyright holder (qiaoshiheng,
+owner of https://github.com/qiaoshiheng/BPMonitor).
+
+================================================================
+中文
+================================================================
+
+1. 授权。在遵守下列条件的前提下，任何获得本软件及相关文档副本（下称"软件"）
+   的人均可免费获得使用、复制、修改、合并、发布和分发的许可，但仅限于
+   个人使用、学习和非商业目的。
+
+2. 禁止商业使用。未经版权人事先另行书面授权，以下行为明确禁止：
+   (a) 出售、出租、有偿转让软件或其任何修改版本；
+   (b) 通过任何应用商店、付费下载渠道或商业分发平台分发软件
+       （无论是否修改）；
+   (c) 将软件嵌入、捆绑或集成到任何以收费、广告、应用内购买、
+       付费订阅或数据变现等方式营利的商品或服务中。
+
+3. 必须保留署名。任何副本或实质性部分（无论是否修改）必须保留上述
+   版权声明与本许可全文。删除、篡改、隐匿版权声明或许可文本，
+   或将软件及其衍生版本冒充为自有原创作品的，构成著作权侵权及
+   不正当竞争行为，版权人保留追究法律责任的权利。
+
+4. 衍生版本必须开源。分发修改版本时，必须以本许可的相同条款公开
+   其完整源代码。
+
+5. 无担保。软件按"现状"提供，不附带任何明示或默示的担保。
+   版权人不承担因使用软件而产生的任何索赔、损害或其他责任。
+
+6. 医疗免责。软件内置的健康提示仅供参考，不构成医疗诊断或治疗建议。
+
+商业授权：请联系版权人 qiaoshiheng
+（https://github.com/qiaoshiheng/BPMonitor 所有者）。
+
+本协议自 2026-11-17 起适用于本项目此后发布的版本。
+此前的历史版本曾以 MIT License 发布，其既有授权不受本协议追溯影响。
