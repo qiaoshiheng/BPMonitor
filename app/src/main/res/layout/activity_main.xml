@@ -255,6 +255,13 @@
                 android:layout_height="240dp"
                 android:layout_marginTop="8dp" />
 
+            <LinearLayout
+                android:id="@+id/statsRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp" />
+
             <TextView
                 android:id="@+id/tvChartSummary"
                 android:layout_width="match_parent"

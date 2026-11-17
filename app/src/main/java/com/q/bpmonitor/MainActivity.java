@@ -29,7 +29,7 @@ public class MainActivity extends android.app.Activity {
     private long currentUserId = DbHelper.DEFAULT_USER_ID;
 
     private TextView tvDate, tvLatestSys, tvLatestDia, tvLatestHr, tvLatestTime, tvChartSummary;
-    private LinearLayout badgeRow, periodTabs, recordList, adviceList;
+    private LinearLayout badgeRow, periodTabs, recordList, adviceList, statsRow;
     private ChartView chart;
     private TextView userChip;
 
@@ -55,6 +55,7 @@ public class MainActivity extends android.app.Activity {
         periodTabs = findViewById(R.id.periodTabs);
         recordList = findViewById(R.id.recordList);
         chart = findViewById(R.id.chart);
+        statsRow = findViewById(R.id.statsRow);
         adviceList = findViewById(R.id.adviceList);
         userChip = findViewById(R.id.userChip);
 
@@ -451,7 +452,7 @@ public class MainActivity extends android.app.Activity {
 
         int xCount;
         String[] labels;
-        String summary;
+        String periodLabel;
         List<Record> inRange;
 
         switch (period) {
@@ -473,7 +474,7 @@ public class MainActivity extends android.app.Activity {
                     buckets.add(filter(inRange, a, b));
                 }
                 fillSeries(sysS, diaS, hrS, buckets);
-                summary = "近 7 天 · " + statText(inRange);
+                periodLabel = "近 7 天";
                 break;
             }
             case PERIOD_MONTH: {
@@ -493,7 +494,7 @@ public class MainActivity extends android.app.Activity {
                     buckets.add(filter(inRange, a, b));
                 }
                 fillSeries(sysS, diaS, hrS, buckets);
-                summary = "近 30 天 · " + statText(inRange);
+                periodLabel = "近 30 天";
                 break;
             }
             case PERIOD_YEAR: {
@@ -514,7 +515,7 @@ public class MainActivity extends android.app.Activity {
                     buckets.add(filter(inRange, a, b));
                 }
                 fillSeries(sysS, diaS, hrS, buckets);
-                summary = "近 12 个月 · " + statText(inRange);
+                periodLabel = "近 12 个月";
                 break;
             }
             default: { // 日：x 轴为 0~24 小时，按真实测量时刻定位
@@ -533,13 +534,14 @@ public class MainActivity extends android.app.Activity {
                 }
                 xCount = 7;
                 labels = new String[]{"00:00", "04:00", "08:00", "12:00", "16:00", "20:00", "24:00"};
-                summary = "今天 · " + statText(inRange);
+                periodLabel = "今天";
                 break;
             }
         }
 
         chart.setData(xCount, labels, out);
-        tvChartSummary.setText(summary);
+        renderStats(inRange, periodLabel);
+        tvChartSummary.setText(periodLabel + " · " + countText(inRange));
     }
 
     private void fillSeries(ChartView.Series sysS, ChartView.Series diaS,
@@ -567,17 +569,78 @@ public class MainActivity extends android.app.Activity {
         return new float[]{s / n, d / n, h / n};
     }
 
-    private String statText(List<Record> l) {
-        if (l.isEmpty()) return "暂无测量数据";
+    private String countText(List<Record> l) {
+        return l.isEmpty() ? "暂无测量数据" : "共 " + l.size() + " 次测量";
+    }
+
+    /** 图表下方统计卡片：平均血压 / 平均心率 / 测量次数 / 脉搏不规律 / 疑似房颤 */
+    private void renderStats(List<Record> l, String periodLabel) {
+        statsRow.removeAllViews();
+        if (l.isEmpty()) {
+            TextView t = new TextView(this);
+            t.setText(periodLabel + "暂无测量数据，切换周期或添加记录后这里会显示平均值与异常统计");
+            t.setTextSize(12);
+            t.setTextColor(0xFF8A93A2);
+            statsRow.addView(t);
+            return;
+        }
         float[] a = avgOf(l);
-        int irregular = 0, afib = 0;
-        for (Record r : l) { if (r.irregular) irregular++; if (r.afib) afib++; }
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format(Locale.CHINA, "平均 %.0f/%.0f mmHg · 心率 %.0f 次/分 · 共 %d 次",
-                a[0], a[1], a[2], l.size()));
-        if (afib > 0) sb.append(String.format(Locale.CHINA, " · 疑似房颤 %d 次", afib));
-        else if (irregular > 0) sb.append(String.format(Locale.CHINA, " · 不规律 %d 次", irregular));
-        return sb.toString();
+        int irr = 0, af = 0;
+        for (Record r : l) { if (r.irregular) irr++; if (r.afib) af++; }
+        statsRow.addView(statCell("平均血压", String.format(Locale.CHINA, "%.0f/%.0f", a[0], a[1]),
+                "mmHg", 0xFF1F2430));
+        statsRow.addView(statCell("平均心率", String.format(Locale.CHINA, "%.0f", a[2]),
+                "次/分", 0xFF30A46C));
+        statsRow.addView(statCell("测量次数", String.valueOf(l.size()), "次", 0xFF3E7BFA));
+        statsRow.addView(statCell("脉搏不规律", String.valueOf(irr), "次",
+                irr > 0 ? 0xFFB47B00 : 0xFF8A93A2));
+        statsRow.addView(statCell("疑似房颤", String.valueOf(af), "次",
+                af > 0 ? 0xFF7C4DBC : 0xFF8A93A2));
+    }
+
+    private View statCell(String label, String value, String unit, int color) {
+        LinearLayout c = new LinearLayout(this);
+        c.setOrientation(LinearLayout.VERTICAL);
+        c.setGravity(Gravity.CENTER);
+        c.setBackgroundResource(R.drawable.bg_input);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        lp.setMargins(dp(2), 0, dp(2), 0);
+        c.setLayoutParams(lp);
+        int p = dp(2);
+        c.setPadding(p, dp(7), p, dp(7));
+
+        TextView tvLabel = new TextView(this);
+        tvLabel.setText(label);
+        tvLabel.setTextSize(10);
+        tvLabel.setTextColor(0xFF8A93A2);
+        tvLabel.setGravity(Gravity.CENTER);
+        c.addView(tvLabel);
+
+        TextView tvVal = new TextView(this);
+        tvVal.setText(value);
+        tvVal.setTextSize(label.equals("平均血压") ? 15 : 17);
+        tvVal.setTextColor(color);
+        tvVal.setTypeface(null, android.graphics.Typeface.BOLD);
+        tvVal.setIncludeFontPadding(false);
+        tvVal.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams valLp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        valLp.setMargins(0, dp(4), 0, 0);
+        tvVal.setLayoutParams(valLp);
+        c.addView(tvVal);
+
+        TextView tvUnit = new TextView(this);
+        tvUnit.setText(unit);
+        tvUnit.setTextSize(9);
+        tvUnit.setTextColor(0xFF8A93A2);
+        tvUnit.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams unitLp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        unitLp.setMargins(0, dp(3), 0, 0);
+        tvUnit.setLayoutParams(unitLp);
+        c.addView(tvUnit);
+        return c;
     }
 
     // ---------- 记录列表 ----------
