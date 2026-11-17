@@ -25,6 +25,12 @@
             android:exported="false"
             android:label="添加记录" />
 
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:label="设置" />
+
     </application>
 
 </manifest>

@@ -1,6 +1,6 @@
 {
-  "versionCode": 7,
-  "versionName": "1.5.1",
-  "url": "https://github.com/qiaoshiheng/BPMonitor/releases/download/v1.5.1/BPMonitor-v1.5.1.apk",
-  "notes": "修复导入恢复后的隐患：恢复的「当前用户」曾被错误存储，可能导致下次启动崩溃。数据本身恢复不受影响，建议所有用户尽快升级。"
+  "versionCode": 8,
+  "versionName": "1.5.2",
+  "url": "https://github.com/qiaoshiheng/BPMonitor/releases/download/v1.5.2/BPMonitor-v1.5.2.apk",
+  "notes": "界面优化：新增独立「设置」页，检查更新与数据备份/恢复三个功能移入其中，主界面更简洁。功能与数据无任何变化。"
 }

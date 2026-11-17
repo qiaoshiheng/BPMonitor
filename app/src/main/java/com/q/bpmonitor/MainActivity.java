@@ -3,7 +3,6 @@ package com.q.bpmonitor;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -24,11 +23,6 @@ public class MainActivity extends android.app.Activity {
 
     public static final int PERIOD_DAY = 0, PERIOD_WEEK = 1, PERIOD_MONTH = 2, PERIOD_YEAR = 3;
     private static final String[] PERIOD_NAMES = {"日", "周", "月", "年"};
-
-    private static final int REQ_EXPORT = 2001;
-    private static final int REQ_IMPORT = 2002;
-    private static final String DB_FILE = "bp_monitor.db";
-    private static final String PREFS_NAME = "bp_prefs";
 
     private DbHelper db;
     private int period = PERIOD_DAY;
@@ -73,9 +67,8 @@ public class MainActivity extends android.app.Activity {
 
         userChip.setOnClickListener(v -> showUserDialog());
         findViewById(R.id.tvAiTextBtn).setOnClickListener(v -> showAiTextDialog());
-        findViewById(R.id.tvCheckUpdate).setOnClickListener(v -> { checkUpdate(true); });
-        findViewById(R.id.tvBackup).setOnClickListener(v -> startExport());
-        findViewById(R.id.tvRestore).setOnClickListener(v -> confirmImport());
+        findViewById(R.id.tvSettings).setOnClickListener(v ->
+                startActivity(new Intent(this, SettingsActivity.class)));
 
         tvDate.setText(fmtToday.format(new Date()));
 
@@ -142,207 +135,7 @@ public class MainActivity extends android.app.Activity {
         } catch (Exception e) { return "?"; }
     }
 
-    // ---------- 数据备份 / 恢复 ----------
-
-    /** 导出备份：系统"保存文件"对话框，用户选择位置（无需存储权限） */
-    private void startExport() {
-        Intent i = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-        i.addCategory(Intent.CATEGORY_OPENABLE);
-        i.setType("application/octet-stream");
-        i.putExtra(Intent.EXTRA_TITLE, "BPMonitor备份_"
-                + new SimpleDateFormat("yyyyMMdd_HHmm", Locale.CHINA).format(new Date())
-                + ".bpbackup");
-        try {
-            startActivityForResult(i, REQ_EXPORT);
-        } catch (Exception e) {
-            Toast.makeText(this, "无法打开保存对话框", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    /** 导入恢复：先确认覆盖风险，再选择备份文件 */
-    private void confirmImport() {
-        android.app.Dialog dialog = new android.app.Dialog(this);
-        dialog.setContentView(R.layout.dialog_confirm);
-        dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(0));
-        android.view.WindowManager.LayoutParams lp = dialog.getWindow().getAttributes();
-        lp.width = (int) (getResources().getDisplayMetrics().widthPixels * 0.84f);
-        dialog.getWindow().setAttributes(lp);
-
-        TextView title = dialog.findViewById(R.id.tvConfirmTitle);
-        TextView msg = dialog.findViewById(R.id.tvConfirmMsg);
-        TextView btnNo = dialog.findViewById(R.id.btnCancel);
-        TextView btnYes = dialog.findViewById(R.id.btnDelete);
-        title.setText("导入备份");
-        msg.setText("导入将覆盖当前全部血压记录与用户档案，且不可撤销。\n\n"
-                + "建议先「导出备份」保存当前数据，再选择备份文件导入。");
-        btnNo.setText("取消");
-        btnYes.setText("选择文件并导入");
-        btnNo.setOnClickListener(v -> dialog.dismiss());
-        btnYes.setOnClickListener(v -> {
-            dialog.dismiss();
-            Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-            i.addCategory(Intent.CATEGORY_OPENABLE);
-            i.setType("*/*");
-            try {
-                startActivityForResult(i, REQ_IMPORT);
-            } catch (Exception e) {
-                Toast.makeText(this, "无法打开文件选择器", Toast.LENGTH_SHORT).show();
-            }
-        });
-        dialog.show();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode != RESULT_OK || data == null || data.getData() == null) return;
-        if (requestCode == REQ_EXPORT) {
-            doExport(data.getData());
-        } else if (requestCode == REQ_IMPORT) {
-            doImport(data.getData());
-        }
-    }
-
-    /** 导出：zip 打包 {数据库文件 + 偏好设置(当前用户/更新检查时间)} */
-    private void doExport(Uri uri) {
-        try {
-            // 回写 WAL，保证拷出的是完整数据
-            android.database.Cursor c = db.getReadableDatabase()
-                    .rawQuery("PRAGMA wal_checkpoint(FULL)", null);
-            c.moveToFirst(); c.close();
-            db.close(); // 关闭连接，防止拷贝到写一半的文件
-
-            java.util.zip.ZipOutputStream zos = new java.util.zip.ZipOutputStream(
-                    getContentResolver().openOutputStream(uri));
-            byte[] buf = new byte[16384]; int n;
-
-            zos.putNextEntry(new java.util.zip.ZipEntry("db/" + DB_FILE));
-            java.io.FileInputStream fis = new java.io.FileInputStream(getDatabasePath(DB_FILE));
-            while ((n = fis.read(buf)) > 0) zos.write(buf, 0, n);
-            fis.close();
-            zos.closeEntry();
-
-            zos.putNextEntry(new java.util.zip.ZipEntry("prefs.json"));
-            org.json.JSONObject prefs = new org.json.JSONObject();
-            for (java.util.Map.Entry<String, ?> e :
-                    getSharedPreferences(PREFS_NAME, MODE_PRIVATE).getAll().entrySet()) {
-                Object v = e.getValue();
-                if (v instanceof Long || v instanceof Integer || v instanceof Boolean
-                        || v instanceof Float || v instanceof String) {
-                    prefs.put(e.getKey(), v);
-                }
-            }
-            zos.write(prefs.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
-            zos.closeEntry();
-            zos.close();
-            Toast.makeText(this, "备份已导出 ✓", Toast.LENGTH_SHORT).show();
-        } catch (Exception e) {
-            Toast.makeText(this, "导出失败：" + e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-        refresh(); // db.close() 后下次访问会自动重开
-    }
-
-    /** 导入：校验备份文件 → 覆盖数据库与偏好设置 → 刷新 */
-    private void doImport(Uri uri) {
-        try {
-            java.io.File tmpDb = new java.io.File(getCacheDir(), "restore_db");
-            java.io.File tmpPrefs = new java.io.File(getCacheDir(), "restore_prefs.json");
-            boolean hasDb = false, hasPrefs = false;
-
-            java.util.zip.ZipInputStream zis = new java.util.zip.ZipInputStream(
-                    getContentResolver().openInputStream(uri));
-            java.util.zip.ZipEntry e;
-            while ((e = zis.getNextEntry()) != null) {
-                if (("db/" + DB_FILE).equals(e.getName())) {
-                    copyStream(zis, new java.io.FileOutputStream(tmpDb));
-                    hasDb = true;
-                } else if ("prefs.json".equals(e.getName())) {
-                    copyStream(zis, new java.io.FileOutputStream(tmpPrefs));
-                    hasPrefs = true;
-                }
-                zis.closeEntry();
-            }
-            zis.close();
-            if (!hasDb) {
-                Toast.makeText(this, "无效的备份文件（缺少数据库）", Toast.LENGTH_LONG).show();
-                return;
-            }
-
-            // 校验 SQLite 文件头，防止选错文件把数据库覆盖坏
-            java.io.FileInputStream chk = new java.io.FileInputStream(tmpDb);
-            byte[] magic = new byte[16];
-            int rn = chk.read(magic);
-            chk.close();
-            String head = new String(magic, 0, Math.max(rn, 0), java.nio.charset.StandardCharsets.UTF_8);
-            if (!head.startsWith("SQLite format 3")) {
-                Toast.makeText(this, "备份文件校验失败，已取消导入", Toast.LENGTH_LONG).show();
-                return;
-            }
-
-            // 覆盖数据库
-            db.close();
-            java.io.File dst = getDatabasePath(DB_FILE);
-            copyFile(tmpDb, dst);
-            new java.io.File(dst.getPath() + "-wal").delete();
-            new java.io.File(dst.getPath() + "-shm").delete();
-            new java.io.File(dst.getPath() + "-journal").delete();
-
-            // 恢复偏好设置（当前用户等）
-            android.content.SharedPreferences sp = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-            if (hasPrefs) {
-                org.json.JSONObject o = new org.json.JSONObject(readText(tmpPrefs));
-                android.content.SharedPreferences.Editor ed = sp.edit();
-                ed.clear();
-                java.util.Iterator<String> keys = o.keys();
-                while (keys.hasNext()) {
-                    String k = keys.next();
-                    Object v = o.get(k);
-                    // JSON 的整数不区分 int/long，org.json 小数值解析为 Integer；
-                    // SharedPreferences 里这些键都是 long，必须统一 putLong，否则 getLong 会崩
-                    if (v instanceof Integer || v instanceof Long) ed.putLong(k, ((Number) v).longValue());
-                    else if (v instanceof Boolean) ed.putBoolean(k, (Boolean) v);
-                    else if (v instanceof Double) ed.putFloat(k, (float) (double) (Double) v);
-                    else if (v instanceof String) ed.putString(k, (String) v);
-                }
-                ed.apply();
-            }
-
-            tmpDb.delete(); tmpPrefs.delete();
-
-            // 恢复出的"当前用户"必须在数据库中存在
-            Object restoredUid = sp.getAll().get("uid");
-            currentUserId = (restoredUid instanceof Number)
-                    ? ((Number) restoredUid).longValue() : DbHelper.DEFAULT_USER_ID;
-            if (db.user(currentUserId) == null) {
-                currentUserId = DbHelper.DEFAULT_USER_ID;
-                sp.edit().putLong("uid", currentUserId).apply();
-            }
-            Toast.makeText(this, "恢复完成 ✓ 记录已还原", Toast.LENGTH_SHORT).show();
-        } catch (Exception ex) {
-            Toast.makeText(this, "恢复失败：" + ex.getMessage(), Toast.LENGTH_LONG).show();
-        }
-        refresh();
-    }
-
-    private void copyStream(java.io.InputStream in, java.io.FileOutputStream out) throws Exception {
-        byte[] buf = new byte[16384]; int n;
-        while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
-        out.flush();
-        out.close();
-    }
-
-    private void copyFile(java.io.File src, java.io.File dst) throws Exception {
-        copyStream(new java.io.FileInputStream(src), new java.io.FileOutputStream(dst));
-    }
-
-    private String readText(java.io.File f) throws Exception {
-        java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
-        java.io.FileInputStream fis = new java.io.FileInputStream(f);
-        byte[] buf = new byte[16384]; int n;
-        while ((n = fis.read(buf)) > 0) bos.write(buf, 0, n);
-        fis.close();
-        return new String(bos.toByteArray(), java.nio.charset.StandardCharsets.UTF_8);
-    }
+    // ---------- 数据备份 / 恢复：已移至 SettingsActivity ----------
 
     private void showUpdateDialog(String ver, String notes, String url, boolean cached) {
         android.app.Dialog dialog = new android.app.Dialog(this);
