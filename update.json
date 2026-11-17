@@ -1,6 +1,6 @@
 {
-  "versionCode": 6,
-  "versionName": "1.5",
-  "url": "https://github.com/qiaoshiheng/BPMonitor/releases/download/v1.5/BPMonitor-v1.5.apk",
-  "notes": "新增数据备份/恢复：一键导出全部血压记录与用户档案到本地文件，重装/换机后一键导入还原，卸载不再丢数据。另修复安装失败时无提示的问题。"
+  "versionCode": 7,
+  "versionName": "1.5.1",
+  "url": "https://github.com/qiaoshiheng/BPMonitor/releases/download/v1.5.1/BPMonitor-v1.5.1.apk",
+  "notes": "修复导入恢复后的隐患：恢复的「当前用户」曾被错误存储，可能导致下次启动崩溃。数据本身恢复不受影响，建议所有用户尽快升级。"
 }

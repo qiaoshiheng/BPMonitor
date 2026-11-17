@@ -66,8 +66,10 @@ public class MainActivity extends android.app.Activity {
         adviceList = findViewById(R.id.adviceList);
         userChip = findViewById(R.id.userChip);
 
-        currentUserId = getSharedPreferences("bp_prefs", MODE_PRIVATE)
-                .getLong("uid", DbHelper.DEFAULT_USER_ID);
+        // 类型安全读取：兼容旧版导入 bug 曾把 uid 写成 int 的情况（getLong 会抛 ClassCastException）
+        Object savedUid = getSharedPreferences("bp_prefs", MODE_PRIVATE).getAll().get("uid");
+        currentUserId = (savedUid instanceof Number)
+                ? ((Number) savedUid).longValue() : DbHelper.DEFAULT_USER_ID;
 
         userChip.setOnClickListener(v -> showUserDialog());
         findViewById(R.id.tvAiTextBtn).setOnClickListener(v -> showAiTextDialog());
@@ -104,7 +106,8 @@ public class MainActivity extends android.app.Activity {
     // ---------- 自动更新 ----------
 
     private void autoCheckUpdate() {
-        long last = getSharedPreferences("bp_prefs", MODE_PRIVATE).getLong("last_update_check", 0);
+        Object l = getSharedPreferences("bp_prefs", MODE_PRIVATE).getAll().get("last_update_check");
+        long last = (l instanceof Number) ? ((Number) l).longValue() : 0;
         if (System.currentTimeMillis() - last < 24f * 3600 * 1000) return;
         getSharedPreferences("bp_prefs", MODE_PRIVATE).edit()
                 .putLong("last_update_check", System.currentTimeMillis()).apply();
@@ -294,8 +297,9 @@ public class MainActivity extends android.app.Activity {
                 while (keys.hasNext()) {
                     String k = keys.next();
                     Object v = o.get(k);
-                    if (v instanceof Long) ed.putLong(k, (Long) v);
-                    else if (v instanceof Integer) ed.putInt(k, (Integer) v);
+                    // JSON 的整数不区分 int/long，org.json 小数值解析为 Integer；
+                    // SharedPreferences 里这些键都是 long，必须统一 putLong，否则 getLong 会崩
+                    if (v instanceof Integer || v instanceof Long) ed.putLong(k, ((Number) v).longValue());
                     else if (v instanceof Boolean) ed.putBoolean(k, (Boolean) v);
                     else if (v instanceof Double) ed.putFloat(k, (float) (double) (Double) v);
                     else if (v instanceof String) ed.putString(k, (String) v);
@@ -306,7 +310,9 @@ public class MainActivity extends android.app.Activity {
             tmpDb.delete(); tmpPrefs.delete();
 
             // 恢复出的"当前用户"必须在数据库中存在
-            currentUserId = sp.getLong("uid", DbHelper.DEFAULT_USER_ID);
+            Object restoredUid = sp.getAll().get("uid");
+            currentUserId = (restoredUid instanceof Number)
+                    ? ((Number) restoredUid).longValue() : DbHelper.DEFAULT_USER_ID;
             if (db.user(currentUserId) == null) {
                 currentUserId = DbHelper.DEFAULT_USER_ID;
                 sp.edit().putLong("uid", currentUserId).apply();
