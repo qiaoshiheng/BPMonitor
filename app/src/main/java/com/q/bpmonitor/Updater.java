@@ -240,7 +240,7 @@ public class Updater {
         } catch (Exception ignored) { }
     }
 
-    /** PackageInstaller 安装结果回调：处理用户确认对话框 */
+    /** PackageInstaller 安装结果回调：处理用户确认 / 失败 / 成功 */
     public void handleInstallResult(Context ctx, android.content.Intent intent) {
         if (!"com.q.bpmonitor.INSTALL_RESULT".equals(intent.getAction())) return;
         int status = intent.getIntExtra(android.content.pm.PackageInstaller.EXTRA_STATUS,
@@ -252,6 +252,24 @@ public class Updater {
                 confirm.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
                 ctx.startActivity(confirm); // 弹出系统"安装应用"确认页
             }
+        } else if (status == android.content.pm.PackageInstaller.STATUS_FAILURE) {
+            String raw = intent.getStringExtra(
+                    android.content.pm.PackageInstaller.EXTRA_STATUS_MESSAGE);
+            String friendly;
+            if (raw != null && (raw.contains("INCOMPATIBLE") || raw.contains("signatures"))) {
+                friendly = "安装失败：与已安装的旧版签名不一致，无法覆盖升级。\n"
+                        + "请先卸载旧版再安装新包（卸载会清除本地记录，"
+                        + "可先在「AI 咨询文本」里导出数据备份）。";
+            } else if (raw != null && raw.contains("INVALID")) {
+                friendly = "安装失败：下载的安装包不完整或已损坏，请重试。";
+            } else {
+                friendly = "安装失败：" + (raw == null ? "未知原因" : raw);
+            }
+            android.widget.Toast.makeText(ctx, friendly,
+                    android.widget.Toast.LENGTH_LONG).show();
+        } else if (status == android.content.pm.PackageInstaller.STATUS_SUCCESS) {
+            android.widget.Toast.makeText(ctx, "更新已安装",
+                    android.widget.Toast.LENGTH_SHORT).show();
         }
     }
 

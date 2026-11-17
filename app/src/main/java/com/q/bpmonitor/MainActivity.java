@@ -84,6 +84,15 @@ public class MainActivity extends android.app.Activity {
         refresh();
     }
 
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        // PackageInstaller 结果若通过已存在实例路由而来（如 singleTask/singleTop），
+        // getIntent() 不会更新，必须在 onNewIntent 里处理
+        setIntent(intent);
+        updater.handleInstallResult(this, intent);
+    }
+
     // ---------- 自动更新 ----------
 
     private void autoCheckUpdate() {
